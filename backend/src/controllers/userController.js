@@ -1,5 +1,4 @@
 const { User, UserProfile, ProcedureCategory } = require('../models');
-const bcrypt = require('bcryptjs');
 
 class UserController {
   /**
@@ -51,13 +50,10 @@ class UserController {
         });
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Crea utente
+      // Crea utente (la password verrà hashata automaticamente dall'hook beforeCreate)
       const user = await User.create({
         username,
-        password: hashedPassword,
+        password, // ← NON hashare manualmente, lo fa l'hook!
         email: email || null,
         firstName: firstName || '',
         lastName: lastName || '',
