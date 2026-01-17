@@ -21,6 +21,11 @@ router.put('/me', authMiddleware, userController.updateProfile);
 router.get('/', authMiddleware, adminOnly, userController.getAll);
 
 /**
+ * POST /api/users - Crea nuovo utente (Admin only)
+ */
+router.post('/', authMiddleware, adminOnly, userController.create);
+
+/**
  * GET /api/users/:id - Dettaglio utente (Admin only)
  */
 router.get('/:id', authMiddleware, adminOnly, validateUserId, userController.getById);

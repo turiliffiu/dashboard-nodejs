@@ -1,4 +1,5 @@
 const { User, UserProfile, ProcedureCategory } = require('../models');
+const bcrypt = require('bcryptjs');
 
 class UserController {
   /**
@@ -20,6 +21,64 @@ class UserController {
         success: true,
         data: users,
         total: users.length,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/users - Crea nuovo utente (solo admin)
+   */
+  async create(req, res, next) {
+    try {
+      const { username, password, email, firstName, lastName, role } = req.body;
+
+      // Validazione campi obbligatori
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          error: 'Username e password sono obbligatori',
+        });
+      }
+
+      // Verifica se username già esistente
+      const existingUser = await User.findOne({ where: { username } });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          error: 'Username già esistente',
+        });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Crea utente
+      const user = await User.create({
+        username,
+        password: hashedPassword,
+        email: email || null,
+        firstName: firstName || '',
+        lastName: lastName || '',
+        isActive: true,
+      });
+
+      // Crea profilo con ruolo
+      await UserProfile.create({
+        userId: user.id,
+        role: role || 'viewer',
+      });
+
+      // Ricarica user con profilo
+      const createdUser = await User.findByPk(user.id, {
+        include: [{ model: UserProfile, as: 'profile' }],
+      });
+
+      res.status(201).json({
+        success: true,
+        message: `Utente ${username} creato con successo`,
+        data: createdUser,
       });
     } catch (error) {
       next(error);
