@@ -194,6 +194,7 @@ function DashboardPage() {
         <ProcedureModal
           procedure={selectedProcedure}
           onClose={() => setSelectedProcedure(null)}
+          onUpdate={loadProcedures}
         />
       )}
 
