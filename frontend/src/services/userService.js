@@ -11,6 +11,11 @@ const userService = {
     return response.data;
   },
 
+  async create(userData) {
+    const response = await api.post('/users', userData);
+    return response.data;
+  },
+
   async updateRole(id, role) {
     const response = await api.patch('/users/' + id + '/role', { role });
     return response.data;
