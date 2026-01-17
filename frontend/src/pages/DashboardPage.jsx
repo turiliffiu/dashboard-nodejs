@@ -82,6 +82,7 @@ function DashboardPage() {
   };
 
   const canCreate = user && (user.isSuperuser || ['admin', 'editor'].includes(user.profile?.role));
+  const isAdmin = user && (user.isSuperuser || user.profile?.role === 'admin');
 
   if (loading) {
     return (
@@ -102,6 +103,14 @@ function DashboardPage() {
             <span className="text-gray-600">
               Ciao, <span className="font-semibold">{user?.username}</span>
             </span>
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/users")}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                👥 Gestione Utenti
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
