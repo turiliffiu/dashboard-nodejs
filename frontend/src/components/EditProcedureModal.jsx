@@ -28,7 +28,19 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      await procedureService.update(procedure.id, formData);
+      // Invia solo i campi modificati (non vuoti)
+      const updateData = {
+        name: formData.name,
+        description: formData.description,
+        isPublic: formData.isPublic,
+      };
+      
+      // Aggiungi content solo se non è vuoto
+      if (formData.content) {
+        updateData.content = formData.content;
+      }
+
+      await procedureService.update(procedure.id, updateData);
       toast.success('Procedura aggiornata con successo');
       onSuccess();
       onClose();
@@ -80,7 +92,7 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contenuto Procedura *
+              Contenuto Procedura
             </label>
             <textarea
               value={formData.content}
@@ -88,10 +100,9 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
               rows={12}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
               placeholder="Inserisci i comandi della procedura..."
-              required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Formato: [comando] Descrizione comando
+              Formato: [comando] Descrizione comando (opzionale - lascia vuoto per non modificare)
             </p>
           </div>
 

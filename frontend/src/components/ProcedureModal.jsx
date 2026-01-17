@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Copy, Edit2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import authService from '../services/authService';
+import procedureService from '../services/procedureService';
 import EditProcedureModal from './EditProcedureModal';
 
 function ProcedureModal({ procedure, onClose, onUpdate }) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [currentProcedure, setCurrentProcedure] = useState(procedure);
+  const [loading, setLoading] = useState(false);
   
-  if (!procedure) return null;
+  useEffect(() => {
+    setCurrentProcedure(procedure);
+  }, [procedure]);
+
+  if (!currentProcedure) return null;
 
   const currentUser = authService.getCurrentUser();
   const canEdit = currentUser && (
     currentUser.isSuperuser ||
     currentUser.profile?.role === 'admin' ||
-    procedure.ownerId === currentUser.id
+    currentProcedure.ownerId === currentUser.id
   );
 
   const copyToClipboard = (text) => {
@@ -21,9 +28,22 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
     toast.success('Comando copiato!');
   };
 
-  const handleEditSuccess = () => {
-    if (onUpdate) {
-      onUpdate();
+  const handleEditSuccess = async () => {
+    // Ricarica i dettagli della procedura aggiornata
+    setLoading(true);
+    try {
+      const response = await procedureService.getById(currentProcedure.id);
+      setCurrentProcedure(response.data);
+      
+      if (onUpdate) {
+        onUpdate(); // Aggiorna anche la lista nella dashboard
+      }
+      
+      toast.success('Vista aggiornata!');
+    } catch (error) {
+      toast.error('Errore nel ricaricare i dettagli');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,10 +54,10 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-5xl mr-4">{procedure.icon}</span>
+              <span className="text-5xl mr-4">{currentProcedure.icon}</span>
               <div>
-                <h2 className="text-2xl font-bold">{procedure.name}</h2>
-                <p className="text-blue-100">{procedure.description}</p>
+                <h2 className="text-2xl font-bold">{currentProcedure.name}</h2>
+                <p className="text-blue-100">{currentProcedure.description}</p>
               </div>
             </div>
             <button
@@ -50,8 +70,12 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
 
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-150px)]">
-            {procedure.sections && procedure.sections.length > 0 ? (
-              procedure.sections.map((section, idx) => (
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-gray-600">Aggiornamento in corso...</div>
+              </div>
+            ) : currentProcedure.sections && currentProcedure.sections.length > 0 ? (
+              currentProcedure.sections.map((section, idx) => (
                 <div key={idx} className="mb-8">
                   <h3 className="text-xl font-bold text-gray-800 mb-2">
                     📌 {section.title}
@@ -90,13 +114,18 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
           {/* Footer */}
           <div className="bg-gray-100 px-6 py-4 flex justify-between items-center">
             <div className="text-sm text-gray-600">
-              Proprietario: <span className="font-semibold">{procedure.owner?.username}</span>
+              Proprietario: <span className="font-semibold">{currentProcedure.owner?.username}</span>
+              {currentProcedure.isPublic ? 
+                <span className="ml-3 text-green-600">🌐 Pubblica</span> : 
+                <span className="ml-3 text-gray-600">🔒 Privata</span>
+              }
             </div>
             <div className="flex space-x-3">
               {canEdit && (
                 <button
                   onClick={() => setShowEditModal(true)}
                   className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                  disabled={loading}
                 >
                   <Edit2 size={18} />
                   <span>Modifica</span>
@@ -115,7 +144,7 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
 
       {showEditModal && (
         <EditProcedureModal
-          procedure={procedure}
+          procedure={currentProcedure}
           onClose={() => setShowEditModal(false)}
           onSuccess={handleEditSuccess}
         />
