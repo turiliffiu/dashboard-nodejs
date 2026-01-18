@@ -542,4 +542,4 @@ Dopo primo login, cambia password admin dal profilo utente!
 
 **Versione**: 1.0.0  
 **Data**: Gennaio 2026  
-**Autore**: Salvo - FiberCop TGS
+**Autore**: Salvo - GS
