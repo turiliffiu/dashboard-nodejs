@@ -61,6 +61,27 @@ pct start 100
 pct exec 100 -- hostname -I
 ```
 
+**Sulla shell del nuovo Container su Proxmox:**
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Modificare i seguenti parametri:
+
+```bash
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+```
+
+Installare ifconfig e git
+
+```bash
+apt update
+apt install -y net-tools
+```
+
 ### 2. Accesso SSH
 
 ```bash
