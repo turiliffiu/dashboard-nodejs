@@ -4,26 +4,6 @@ Guida rapida per deployment in 15 minuti su container Proxmox.
 
 ---
 
-## 🎯 TL;DR - Comandi Rapidi
-
-```bash
-# 1. SSH nel container
-ssh root@<IP_CONTAINER>
-
-# 2. Upload script
-scp deploy.sh root@<IP_CONTAINER>:/root/
-
-# 3. Deploy!
-chmod +x /root/deploy.sh
-bash /root/deploy.sh
-
-# 4. Accedi
-# http://<IP_CONTAINER>
-# Username: admin | Password: admin123
-```
-
----
-
 ## 📋 PREREQUISITI (5 minuti)
 
 ### 1. Crea Container Proxmox
@@ -80,17 +60,6 @@ Installare ifconfig e git
 ```bash
 apt update
 apt install -y net-tools
-```
-
-### 2. Accesso SSH
-
-```bash
-# Dal tuo computer
-ssh root@<IP_CONTAINER>
-
-# Se primo accesso, imposta password
-# Se SSH key, copia la tua chiave
-ssh-copy-id root@<IP_CONTAINER>
 ```
 
 ---
