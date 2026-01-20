@@ -380,7 +380,8 @@ server {
     root $NGINX_DIR;
     index index.html;
 
-    location /api {
+    location /api/ {
+        rewrite ^/api/(.*)$ /\$1 break;
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
@@ -505,9 +506,10 @@ EOF
     chmod +x /usr/local/bin/backup-dashboard-db.sh
     
     log_info "Configurazione cron job backup..."
-    (crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/backup-dashboard-db.sh >> /var/log/backup-db.log 2>&1") | crontab -
+    (crontab -l 2>/dev/null || true; echo "0 2 * * * /usr/local/bin/backup-dashboard-db.sh >> /var/log/backup-db.log 2>&1") | crontab -
     
     log_success "Backup automatici configurati"
+    log_info "Cron job attivo: Daily backup alle 2:00 AM"
 }
 
 step_13_test_deployment() {
@@ -521,7 +523,14 @@ step_13_test_deployment() {
     if echo "$HEALTH_RESPONSE" | grep -q "OK"; then
         log_success "Backend health check: OK"
     else
-        log_error "Backend health check: FAILED"
+        log_warning "Backend health check tramite proxy: FAILED"
+        log_info "Test diretto backend..."
+        DIRECT_HEALTH=$(curl -s http://localhost:3000/health 2>/dev/null || echo "ERROR")
+        if echo "$DIRECT_HEALTH" | grep -q "OK"; then
+            log_success "Backend diretto: OK"
+        else
+            log_error "Backend: FAILED"
+        fi
     fi
     
     log_info "Test frontend..."
