@@ -96,7 +96,7 @@ bash /root/deploy.sh
 cd /root
 
 # 2. Download script
-wget https://raw.githubusercontent.com/turiliffiu/dashboard-nodejs/main/scripts/deploy.sh
+wget https://raw.githubusercontent.com/turiliffiu/dashboard-nodejs/main/deploy/scripts/deploy.sh
 
 # 3. Rendi eseguibile
 chmod +x deploy.sh
