@@ -381,8 +381,7 @@ server {
     index index.html;
 
     location /api/ {
-        rewrite ^/api/(.*)$ /\$1 break;
-        proxy_pass http://localhost:3000;
+        proxy_pass http://127.0.0.1:3000/api/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -675,6 +674,9 @@ EOF
     log_warning "⚠️  Cambia la password admin al primo login!"
     echo ""
     log_info "Report: /root/dashboard-deployment-report.txt"
+    echo ""
+    log_info "💡 Per usare pm2 in questa sessione SSH:"
+    echo "   source /root/.bashrc"
     echo ""
     
     separator "ENJOY YOUR DASHBOARD! 🚀"
