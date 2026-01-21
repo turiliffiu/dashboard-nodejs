@@ -75,6 +75,7 @@ router.get(
   '/:id/download',
   authMiddleware,
   validateProcedureId,
+  editorOrAdmin,
   procedureController.download
 );
 

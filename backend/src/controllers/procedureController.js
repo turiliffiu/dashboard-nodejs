@@ -362,7 +362,7 @@ class ProcedureController {
       }
 
       // Verifica permessi visualizzazione
-      if (!procedure.canUserView(req.user)) {
+      if (!procedure.canUserEdit(req.user)) {
         return res.status(403).json({
           success: false,
           error: 'Accesso negato',
