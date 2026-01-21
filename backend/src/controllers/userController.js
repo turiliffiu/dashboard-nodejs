@@ -50,6 +50,17 @@ class UserController {
         });
       }
 
+      // Verifica se email già esistente (solo se fornita)
+      if (email) {
+        const existingEmail = await User.findOne({ where: { email } });
+        if (existingEmail) {
+          return res.status(400).json({
+            success: false,
+            error: 'Email già esistente',
+          });
+        }
+      }
+
       // Crea utente (la password verrà hashata automaticamente dall'hook beforeCreate)
       const user = await User.create({
         username,

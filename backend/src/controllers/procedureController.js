@@ -143,6 +143,18 @@ class ProcedureController {
         });
       }
 
+      // Verifica se filename già esistente
+      const existingProcedure = await ProcedureCategory.findOne({ 
+        where: { filename: file.filename } 
+      });
+      if (existingProcedure) {
+        await fs.unlink(file.path);
+        return res.status(400).json({
+          success: false,
+          error: 'Esiste già una procedura con questo nome file',
+        });
+      }
+
       // Crea procedura
       const procedure = await ProcedureCategory.create({
         name,
