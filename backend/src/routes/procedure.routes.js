@@ -57,6 +57,17 @@ router.put(
   procedureController.updateFile
 );
 
+
+/**
+ * PUT /api/procedures/:id/command - Modifica singolo comando
+ * Requires: Owner o Admin
+ */
+router.put(
+  '/:id/command',
+  authMiddleware,
+  validateProcedureId,
+  procedureController.updateCommand
+);
 /**
  * DELETE /api/procedures/:id - Elimina procedura
  * Requires: Owner o Admin

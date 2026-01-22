@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Copy, Edit2, Download, Trash2 } from 'lucide-react';
+import { X, Copy, Edit2, Download, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'react-toastify';
 import authService from '../services/authService';
 import procedureService from '../services/procedureService';
@@ -68,6 +68,41 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
     }
   };
 
+
+  const handleEditCommand = async (sectionIndex, commandIndex, currentCmd) => {
+    const newCmd = window.prompt('Modifica il comando:', currentCmd);
+    
+    if (newCmd === null || newCmd === currentCmd) {
+      return; // Annullato o nessuna modifica
+    }
+
+    if (!newCmd.trim()) {
+      toast.error('Il comando non può essere vuoto');
+      return;
+    }
+
+    try {
+      const response = await procedureService.updateCommand(
+        currentProcedure.id,
+        sectionIndex,
+        commandIndex,
+        newCmd
+      );
+      
+      setCurrentProcedure(response.data);
+      toast.success('Comando aggiornato con successo');
+      
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      if (error.response?.status === 403) {
+        toast.error('Non hai i permessi per modificare questo comando');
+      } else {
+        toast.error('Errore durante l\'aggiornamento del comando');
+      }
+    }
+  };
   const handleDelete = async () => {
     if (!window.confirm(`Sei sicuro di voler eliminare la procedura "${currentProcedure.name}"?\n\nQuesta azione è irreversibile!`)) {
       return;
@@ -150,13 +185,24 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
                         <h4 className="font-semibold text-gray-700">
                           {cmd.label}
                         </h4>
-                        <button
-                          onClick={() => copyToClipboard(cmd.cmd)}
-                          className="text-blue-600 hover:text-blue-800 transition"
-                          title="Copia comando"
-                        >
-                          <Copy size={20} />
-                        </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => copyToClipboard(cmd.cmd)}
+                              className="text-blue-600 hover:text-blue-800 transition"
+                              title="Copia comando"
+                            >
+                              <Copy size={20} />
+                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={() => handleEditCommand(idx, cmdIdx, cmd.cmd)}
+                                className="text-green-600 hover:text-green-800 transition"
+                                title="Modifica comando"
+                              >
+                                <Pencil size={20} />
+                              </button>
+                            )}
+                          </div>
                       </div>
                       <pre className="bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-sm">
                         {cmd.cmd}

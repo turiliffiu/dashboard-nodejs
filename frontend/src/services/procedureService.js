@@ -36,6 +36,15 @@ const procedureService = {
     });
     return response;
   },
+
+  async updateCommand(id, sectionIndex, commandIndex, newCmd) {
+    const response = await api.put('/procedures/' + id + '/command', {
+      sectionIndex,
+      commandIndex,
+      newCmd,
+    });
+    return response.data;
+  },
 };
 
 export default procedureService;

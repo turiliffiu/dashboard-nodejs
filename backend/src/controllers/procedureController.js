@@ -6,8 +6,8 @@ const { parseFile } = require('../utils/parser');
 
 class ProcedureController {
   /**
-   * GET /api/procedures - Lista tutte le procedure
-   */
+  * GET /api/procedures - Lista tutte le procedure
+  */
   async getAll(req, res, next) {
     try {
       const userId = req.userId;
@@ -48,12 +48,12 @@ class ProcedureController {
         ...proc.toJSON(),
         canEdit: proc.canUserEdit(req.user),
         canDelete: proc.canUserDelete(req.user),
+        canView: proc.canUserView(req.user),
       }));
 
       res.json({
         success: true,
         data: proceduresWithPermissions,
-        total: proceduresWithPermissions.length,
       });
     } catch (error) {
       next(error);
@@ -61,8 +61,8 @@ class ProcedureController {
   }
 
   /**
-   * GET /api/procedures/:id - Dettaglio procedura con contenuto file
-   */
+  * GET /api/procedures/:id - Dettaglio procedura con contenuto file
+  */
   async getById(req, res, next) {
     try {
       const { id } = req.params;
@@ -94,7 +94,7 @@ class ProcedureController {
 
       // Leggi e parsa il file
       const filePath = path.join(__dirname, '../uploads/procedures', procedure.filename);
-      
+     
       let sections = [];
       try {
         const fileContent = await fs.readFile(filePath, 'utf-8');
@@ -119,8 +119,8 @@ class ProcedureController {
   }
 
   /**
-   * POST /api/procedures - Crea nuova procedura
-   */
+  * POST /api/procedures - Crea nuova procedura
+  */
   async create(req, res, next) {
     try {
       const { name, icon, description, isPublic } = req.body;
@@ -290,6 +290,7 @@ class ProcedureController {
         data: procedure,
       });
     } catch (error) {
+      // Elimina file se update fallisce
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
@@ -388,6 +389,96 @@ class ProcedureController {
       // Stream file
       const fileStream = require('fs').createReadStream(filePath);
       fileStream.pipe(res);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * PUT /api/procedures/:id/command - Modifica singolo comando
+   */
+  async updateCommand(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { sectionIndex, commandIndex, newCmd } = req.body;
+
+      // Validazione input
+      if (sectionIndex === undefined || commandIndex === undefined || !newCmd) {
+        return res.status(400).json({
+          success: false,
+          error: 'Parametri mancanti: sectionIndex, commandIndex, newCmd',
+        });
+      }
+
+      const procedure = await ProcedureCategory.findByPk(id);
+
+      if (!procedure) {
+        return res.status(404).json({
+          success: false,
+          error: 'Procedura non trovata',
+        });
+      }
+
+      // Verifica permessi
+      if (!procedure.canUserEdit(req.user)) {
+        return res.status(403).json({
+          success: false,
+          error: 'Permessi insufficienti',
+        });
+      }
+
+      // Leggi file attuale
+      const filePath = path.join(__dirname, '../uploads/procedures', procedure.filename);
+      const fileContent = await fs.readFile(filePath, 'utf-8');
+      const sections = parseFile(fileContent);
+
+      // Verifica indici
+      if (sectionIndex < 0 || sectionIndex >= sections.length) {
+        return res.status(400).json({
+          success: false,
+          error: 'Indice sezione non valido',
+        });
+      }
+
+      if (commandIndex < 0 || commandIndex >= sections[sectionIndex].commands.length) {
+        return res.status(400).json({
+          success: false,
+          error: 'Indice comando non valido',
+        });
+      }
+
+      // Aggiorna comando
+      sections[sectionIndex].commands[commandIndex].cmd = newCmd.trim();
+
+      // Ricostruisci file
+      let newContent = '';
+      sections.forEach((section) => {
+        newContent += `[${section.title}]\n`;
+        if (section.desc) {
+          newContent += `${section.desc}\n`;
+        }
+        newContent += '\n';
+
+        section.commands.forEach((command) => {
+          newContent += `COMANDO: ${command.label}\n`;
+          newContent += `${command.cmd}\n\n`;
+        });
+      });
+
+      // Scrivi file aggiornato
+      await fs.writeFile(filePath, newContent, 'utf-8');
+
+      // Ricarica procedura con contenuto aggiornato
+      const updatedSections = parseFile(newContent);
+
+      res.json({
+        success: true,
+        message: 'Comando aggiornato con successo',
+        data: {
+          ...procedure.toJSON(),
+          sections: updatedSections,
+        },
+      });
     } catch (error) {
       next(error);
     }
