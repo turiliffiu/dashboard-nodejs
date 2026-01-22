@@ -7,7 +7,6 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    content: '',
     isPublic: false,
   });
   const [loading, setLoading] = useState(false);
@@ -17,7 +16,6 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
       setFormData({
         name: procedure.name || '',
         description: procedure.description || '',
-        content: procedure.content || '',
         isPublic: procedure.isPublic || false,
       });
     }
@@ -28,17 +26,11 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      // Invia solo i campi modificati (non vuoti)
       const updateData = {
         name: formData.name,
         description: formData.description,
         isPublic: formData.isPublic,
       };
-      
-      // Aggiungi content solo se non è vuoto
-      if (formData.content) {
-        updateData.content = formData.content;
-      }
 
       await procedureService.update(procedure.id, updateData);
       toast.success('Procedura aggiornata con successo');
@@ -90,19 +82,9 @@ function EditProcedureModal({ procedure, onClose, onSuccess }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contenuto Procedura
-            </label>
-            <textarea
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-              placeholder="Inserisci i comandi della procedura..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Formato: [comando] Descrizione comando (opzionale - lascia vuoto per non modificare)
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Nota:</strong> Per modificare il contenuto della procedura, scarica il file, modificalo e caricalo nuovamente dalla dashboard principale.
             </p>
           </div>
 
