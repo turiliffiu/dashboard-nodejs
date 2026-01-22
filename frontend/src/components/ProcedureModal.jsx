@@ -23,9 +23,28 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
     (currentUser.profile?.role === 'editor' && currentProcedure.ownerId === currentUser.id)
   );
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Comando copiato!');
+  const copyToClipboard = async (text) => {
+    try {
+      // Prova prima con Clipboard API (HTTPS/localhost)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast.success('Comando copiato!');
+      } else {
+        // Fallback per HTTP usando execCommand
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        toast.success('Comando copiato!');
+      }
+    } catch (error) {
+      console.error('Errore copia:', error);
+      toast.error('Errore durante la copia');
+    }
   };
 
   const handleDownload = async () => {
