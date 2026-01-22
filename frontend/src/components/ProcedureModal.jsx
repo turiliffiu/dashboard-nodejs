@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Copy, Edit2 } from 'lucide-react';
+import { X, Copy, Edit2, Download, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import authService from '../services/authService';
 import procedureService from '../services/procedureService';
@@ -20,12 +20,54 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
   const canEdit = currentUser && (
     currentUser.isSuperuser ||
     currentUser.profile?.role === 'admin' ||
-    currentProcedure.ownerId === currentUser.id
+    (currentUser.profile?.role === 'editor' && currentProcedure.ownerId === currentUser.id)
   );
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success('Comando copiato!');
+  };
+
+  const handleDownload = async () => {
+    try {
+      const response = await procedureService.download(currentProcedure.id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', currentProcedure.filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('File scaricato!');
+    } catch (error) {
+      if (error.response?.status === 403) {
+        toast.error('Non hai i permessi per scaricare questo file');
+      } else {
+        toast.error('Errore durante il download');
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Sei sicuro di voler eliminare la procedura "${currentProcedure.name}"?\n\nQuesta azione è irreversibile!`)) {
+      return;
+    }
+
+    try {
+      await procedureService.delete(currentProcedure.id);
+      toast.success('Procedura eliminata con successo!');
+      if (onUpdate) {
+        onUpdate(); // Aggiorna la lista nella dashboard
+      }
+      onClose(); // Chiude il modal
+    } catch (error) {
+      if (error.response?.status === 403) {
+        toast.error('Non hai i permessi per eliminare questa procedura');
+      } else {
+        toast.error('Errore durante l\'eliminazione');
+      }
+    }
   };
 
   const handleEditSuccess = async () => {
@@ -122,14 +164,31 @@ function ProcedureModal({ procedure, onClose, onUpdate }) {
             </div>
             <div className="flex space-x-3">
               {canEdit && (
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                  disabled={loading}
-                >
-                  <Edit2 size={18} />
-                  <span>Modifica</span>
-                </button>
+                <>
+                  <button
+                    onClick={handleDownload}
+                    className="flex items-center space-x-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+                  >
+                    <Download size={18} />
+                    <span>Download</span>
+                  </button>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                    disabled={loading}
+                  >
+                    <Edit2 size={18} />
+                    <span>Modifica</span>
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex items-center space-x-2 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+                    title="Elimina procedura"
+                  >
+                    <Trash2 size={18} />
+                    <span>Elimina</span>
+                  </button>
+                </>
               )}
               <button
                 onClick={onClose}
