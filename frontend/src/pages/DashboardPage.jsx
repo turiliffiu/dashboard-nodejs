@@ -8,6 +8,7 @@ import searchService from '../services/searchService';
 import ProcedureModal from '../components/ProcedureModal';
 import SearchBar from '../components/SearchBar';
 import UploadProcedureModal from '../components/UploadProcedureModal';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -15,6 +16,7 @@ function DashboardPage() {
   const [filteredProcedures, setFilteredProcedures] = useState([]);
   const [selectedProcedure, setSelectedProcedure] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
@@ -112,6 +114,12 @@ function DashboardPage() {
               </button>
             )}
             <button
+              onClick={() => setShowChangePasswordModal(true)}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
+            >
+              🔒 Cambia Password
+            </button>
+            <button
               onClick={handleLogout}
               className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
             >
@@ -202,6 +210,11 @@ function DashboardPage() {
         <UploadProcedureModal
           onClose={() => setShowUploadModal(false)}
           onSuccess={handleUploadSuccess}
+        />
+      )}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowChangePasswordModal(false)}
         />
       )}
     </div>

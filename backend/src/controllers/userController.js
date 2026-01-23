@@ -357,6 +357,69 @@ class UserController {
       next(error);
     }
   }
+/**
+   * PUT /api/users/me/password - Cambia password utente corrente
+   */
+  async changePassword(req, res, next) {
+    try {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      // Validazione campi obbligatori
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          error: 'Tutti i campi sono obbligatori',
+        });
+      }
+
+      // Verifica che le nuove password coincidano
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          error: 'Le nuove password non coincidono',
+        });
+      }
+
+      // Verifica lunghezza minima password
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          error: 'La nuova password deve essere di almeno 6 caratteri',
+        });
+      }
+
+      // Trova utente corrente
+      const user = await User.findByPk(req.userId);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: 'Utente non trovato',
+        });
+      }
+
+      // Verifica password attuale
+      const isValidPassword = await user.comparePassword(currentPassword);
+      if (!isValidPassword) {
+        return res.status(401).json({
+          success: false,
+          error: 'Password attuale non corretta',
+        });
+      }
+
+      // Aggiorna password (l'hook beforeUpdate la hasherà automaticamente)
+      user.password = newPassword;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: 'Password cambiata con successo',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 }
 
 module.exports = new UserController();

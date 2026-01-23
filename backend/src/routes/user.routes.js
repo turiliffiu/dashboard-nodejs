@@ -13,6 +13,11 @@ router.get('/me', authMiddleware, userController.getProfile);
 /**
  * PUT /api/users/me - Aggiorna profilo utente corrente
  */
+
+/**
+ * PUT /api/users/me/password - Cambia password utente corrente
+ */
+router.put('/me/password', authMiddleware, userController.changePassword);
 router.put('/me', authMiddleware, userController.updateProfile);
 
 /**
