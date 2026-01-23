@@ -36,19 +36,19 @@ La **Dashboard Procedure Operative** è un'applicazione web moderna per:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND (React)                      │
+│                    FRONTEND (React)                     │
 │  React 18 + Vite + Tailwind CSS + React Router          │
 └────────────────┬────────────────────────────────────────┘
                  │ HTTP REST API (JSON)
                  │
 ┌────────────────▼────────────────────────────────────────┐
-│                 BACKEND (Express)                        │
-│  Node.js 20 + Express 4 + JWT + Sequelize ORM          │
+│                 BACKEND (Express)                       │
+│  Node.js 20 + Express 4 + JWT + Sequelize ORM           │
 └────────────────┬────────────────────────────────────────┘
                  │ SQL Queries
                  │
 ┌────────────────▼────────────────────────────────────────┐
-│                DATABASE (PostgreSQL)                     │
+│                DATABASE (PostgreSQL)                    │
 │  PostgreSQL 16 + Relational Schema                      │
 └─────────────────────────────────────────────────────────┘
 ```
